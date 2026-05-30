@@ -8,7 +8,6 @@ e2e-tests:
   script:
     - node -v
     - npm -v
-    - npm install -g yarn
     - yarn -v
     - yarn install
     - npx playwright install
