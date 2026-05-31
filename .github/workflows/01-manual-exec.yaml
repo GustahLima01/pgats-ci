@@ -1,68 +1,58 @@
 # CI de Nível 01 - Disparo Manual através de clique
 
-# nome da pipeline
 name: 'Execução Manual'
 
-# gatilhos / triggers - regras de disparo
-# gatilho manual = workflow_dispatch
-
 on:
-    workflow_dispatch:
-
-# tarefas dentro da pipeline = jobs
+  workflow_dispatch:
 
 jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
 
-    # nome do job
-    e2e-tests:
-        # mquina onde o job vai rooar
-        runs-on: ubuntu-latest
+    steps:
+      # clone do projeto
+      - uses: actions/checkout@v4
 
-        # passos do job
-        steps:
-            #clone do projeto
-            - uses: actions/checkout@v4
+      # instalação do node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
 
-            # instalação do node
-            - uses: actions/setup-node@v4
-              with:
-                node-version: 24.x
-            
-            # instalação do JAVA
-            - name: Instalando Java para Allure
-              uses: actions/setup-java@v4
-              with:
-                distribution: 'temurin'
-                java-version: '17'
+      # instalação do Java para Allure
+      - name: Instalando Java para Allure
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-            # instalação do yarn
-            - name: Instando yarn
-              run: npm install -g yarn
+      # instalação do Yarn
+      - name: Instalando Yarn
+        run: npm install -g yarn
 
-            # instalação das dependências
-            - name: Instalando dependências
-              run: yarn
+      # instalação das dependências
+      - name: Instalando dependências
+        run: yarn install
 
-            # Instalação dos browsers do Playwrigth
-            - name: Instalando Browsers do Playwright
-              run: yarn playwright install
+      # instalação dos browsers do Playwright
+      - name: Instalando Browsers do Playwright
+        run: yarn playwright install --with-deps
 
-            # Execução dos testes e2e
-            - name: Executando testes e2e
-              run: yarn run e2e
+      # execução dos testes e2e
+      - name: Executando testes e2e
+        run: yarn run e2e
 
-            # Gera relatório Allure mesmo se o teste falhar
-            - name: Gerando Allure Report
-              if: always()
-              run: yarn run allure:generate
+      # gera relatório Allure mesmo se o teste falhar
+      - name: Gerando Allure Report
+        if: always()
+        run: yarn run allure:generate
 
-            # Permite baixar o relatório
-            - name: Publicando artefatos
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                name: allure-report
-                path: |
-                  allure-report
-                  allure-results
-                  test-results
+      # permite baixar o relatório
+      - name: Publicando artefatos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: |
+            allure-report
+            allure-results
+            test-results
